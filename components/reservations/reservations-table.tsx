@@ -24,7 +24,7 @@ import { StatusBadge } from "@/components/status-badge"
 import { ReservationStatusDialog } from "@/components/reservations/reservation-status-dialog"
 import { formatDateTime } from "@/lib/derived"
 import { useApp } from "@/lib/store"
-import { canDelete } from "@/lib/roles"
+import { canCreate, canDelete } from "@/lib/roles"
 import { SERVICE_LABELS, STATUS_LABELS, STATUS_ORDER, type Reservation, type ReservationStatus } from "@/lib/types"
 
 export function ReservationsTable({ reservations }: { reservations: Reservation[] }) {
@@ -101,7 +101,7 @@ export function ReservationsTable({ reservations }: { reservations: Reservation[
                 <TableHead>Kilos</TableHead>
                 <TableHead>Scheduled</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                {(canCreate(role) || canDelete(role)) && <TableHead className="text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -119,34 +119,39 @@ export function ReservationsTable({ reservations }: { reservations: Reservation[
                   <TableCell>
                     <StatusBadge status={r.status} />
                   </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
-                        <MoreHorizontal />
-                        <span className="sr-only">Actions</span>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuGroup>
-                          <DropdownMenuItem onClick={() => setEditing(r)}>Update Status</DropdownMenuItem>
-                          {canDelete(role) && (
-                            <DropdownMenuItem
-                              variant="destructive"
-                              onClick={() => setDeleting(r)}
-                            >
-                              <Trash2 data-icon="inline-start" />
-                              Delete
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+                  {(canCreate(role) || canDelete(role)) && (
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
+                          <MoreHorizontal />
+                          <span className="sr-only">Actions</span>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuGroup>
+                            {canCreate(role) && (
+                              <DropdownMenuItem onClick={() => setEditing(r)}>Update Status</DropdownMenuItem>
+                            )}
+                            {canDelete(role) && (
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onClick={() => setDeleting(r)}
+                              >
+                                <Trash2 data-icon="inline-start" />
+                                Delete
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
       )}
+
 
       <ReservationStatusDialog reservation={editing} onOpenChange={(open) => !open && setEditing(null)} />
 

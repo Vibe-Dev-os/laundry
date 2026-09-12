@@ -1,54 +1,19 @@
 "use client"
 
-import { Bell, CalendarClock, CheckCircle2, TrendingDown, TrendingUp, Wallet } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
+import { TrendingDown, TrendingUp } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatCurrency } from "@/lib/derived"
 import { cn } from "@/lib/utils"
 
-interface KpiCardsProps {
-  todayRevenue: number
-  revenueTrend: number
-  activeReservations: number
-  pendingNotifications: number
-  completedToday: number
+export interface KpiCardData {
+  label: string
+  value: string
+  icon: LucideIcon
+  trend?: number
 }
 
-export function KpiCards({
-  todayRevenue,
-  revenueTrend,
-  activeReservations,
-  pendingNotifications,
-  completedToday,
-}: KpiCardsProps) {
-  const cards = [
-    {
-      label: "Today's Revenue",
-      value: formatCurrency(todayRevenue),
-      icon: Wallet,
-      trend: revenueTrend,
-      showTrend: true,
-    },
-    {
-      label: "Active Reservations",
-      value: String(activeReservations),
-      icon: CalendarClock,
-      showTrend: false,
-    },
-    {
-      label: "Pending Notifications",
-      value: String(pendingNotifications),
-      icon: Bell,
-      showTrend: false,
-    },
-    {
-      label: "Completed Orders Today",
-      value: String(completedToday),
-      icon: CheckCircle2,
-      showTrend: false,
-    },
-  ]
-
+export function KpiCards({ cards }: { cards: KpiCardData[] }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
@@ -61,7 +26,7 @@ export function KpiCards({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold tracking-tight">{card.value}</div>
-            {card.showTrend && (
+            {card.trend !== undefined && (
               <p
                 className={cn(
                   "mt-1 flex items-center gap-1 text-xs font-medium",

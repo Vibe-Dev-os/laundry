@@ -41,10 +41,19 @@ export function ReservationFormSheet({ open, onOpenChange }: ReservationFormShee
   const [time, setTime] = React.useState("09:00")
   const [notes, setNotes] = React.useState("")
   const [businessUnitId, setBusinessUnitId] = React.useState(
-    state.selectedBusinessUnitId !== "all" ? state.selectedBusinessUnitId : state.businessUnits[0].id
+    state.selectedBusinessUnitId !== "all" ? state.selectedBusinessUnitId : (state.businessUnits[0]?.id ?? "")
   )
   const [errors, setErrors] = React.useState<Record<string, string>>({})
   const [submitting, setSubmitting] = React.useState(false)
+
+  // Re-sync the default business unit each time the sheet opens, since it stays mounted
+  // and the selected filter or loaded business units can change after initial mount.
+  React.useEffect(() => {
+    if (!open) return
+    setBusinessUnitId((current) =>
+      current ? current : state.selectedBusinessUnitId !== "all" ? state.selectedBusinessUnitId : (state.businessUnits[0]?.id ?? "")
+    )
+  }, [open, state.selectedBusinessUnitId, state.businessUnits])
 
   function reset() {
     setName("")
@@ -65,6 +74,7 @@ export function ReservationFormSheet({ open, onOpenChange }: ReservationFormShee
     if (!contact.trim()) nextErrors.contact = "Contact number is required."
     if (email && !/^\S+@\S+\.\S+$/.test(email)) nextErrors.email = "Enter a valid email address."
     if (!kilos || Number(kilos) <= 0) nextErrors.kilos = "Enter a valid estimate."
+    if (!businessUnitId) nextErrors.businessUnit = "Business unit data is still loading. Please try again."
     if (!date) nextErrors.date = "Pick a preferred date."
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
@@ -147,7 +157,7 @@ export function ReservationFormSheet({ open, onOpenChange }: ReservationFormShee
               />
               {errors.email && <FieldError>{errors.email}</FieldError>}
             </Field>
-            <Field>
+            <Field data-invalid={!!errors.businessUnit || undefined}>
               <FieldLabel htmlFor="business-unit">Business Unit</FieldLabel>
               <Select value={businessUnitId} onValueChange={setBusinessUnitId}>
                 <SelectTrigger id="business-unit" className="w-full">
@@ -165,6 +175,7 @@ export function ReservationFormSheet({ open, onOpenChange }: ReservationFormShee
                   </SelectGroup>
                 </SelectContent>
               </Select>
+              {errors.businessUnit && <FieldError>{errors.businessUnit}</FieldError>}
             </Field>
             <Field>
               <FieldLabel htmlFor="service-type">Service Type</FieldLabel>

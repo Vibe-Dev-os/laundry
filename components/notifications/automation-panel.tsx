@@ -60,7 +60,7 @@ export function AutomationPanel() {
         })}
       </div>
       {!canManage && (
-        <p className="text-xs text-muted-foreground">Only owners and branch admins can change automation settings.</p>
+        <p className="text-xs text-muted-foreground">Only owners can change automation settings.</p>
       )}
     </div>
   )

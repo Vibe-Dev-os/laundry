@@ -1,4 +1,4 @@
-export type Role = "owner" | "admin" | "staff" | "customer"
+export type Role = "owner" | "staff" | "customer"
 
 export type ServiceKey = "wash-fold" | "wash-iron" | "dry-clean" | "comforter"
 

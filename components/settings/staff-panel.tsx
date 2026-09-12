@@ -25,7 +25,7 @@ import { canManageSettings } from "@/lib/roles"
 import { ROLE_LABELS, useApp } from "@/lib/store"
 import type { Role } from "@/lib/types"
 
-const ASSIGNABLE_ROLES: Role[] = ["admin", "staff"]
+const ASSIGNABLE_ROLES: Role[] = ["staff"]
 
 export function StaffPanel({ businessUnitId }: { businessUnitId: string }) {
   const { state, dispatch } = useApp()

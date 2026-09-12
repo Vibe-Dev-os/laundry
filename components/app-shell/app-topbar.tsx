@@ -66,6 +66,8 @@ export function AppTopbar() {
 
   if (!state.currentUser) return null
 
+  const isCustomer = state.currentUser.role === "customer"
+
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
       <SidebarTrigger />
@@ -74,6 +76,7 @@ export function AppTopbar() {
       <Select
         value={state.selectedBusinessUnitId}
         onValueChange={(v) => dispatch({ type: "SET_BUSINESS_UNIT", id: v })}
+        disabled={isCustomer}
       >
         <SelectTrigger className="w-[200px]" size="sm">
           <Building2 data-icon="inline-start" className="text-muted-foreground" />
@@ -111,47 +114,49 @@ export function AppTopbar() {
       </div>
 
       <div className="ml-auto flex items-center gap-1.5">
-        <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
-            <span className="relative">
-              <Bell className="size-4" />
-              {unreadCount > 0 && (
-                <span className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-white">
-                  {unreadCount}
-                </span>
-              )}
-            </span>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              {recentNotifications.length === 0 && (
-                <div className="px-2 py-4 text-center text-sm text-muted-foreground">No notifications yet.</div>
-              )}
-              {recentNotifications.map((n) => {
-                const Icon = CHANNEL_ICON[n.channels[0]] ?? Bell
-                return (
-                  <DropdownMenuItem key={n.id} className="flex items-start gap-2">
-                    <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-medium">{n.recipient}</span>
-                      <span className="line-clamp-2 text-xs text-muted-foreground">{n.message}</span>
-                    </div>
-                    <Badge
-                      variant="secondary"
-                      className="ml-auto shrink-0"
-                    >
-                      {n.status}
-                    </Badge>
-                  </DropdownMenuItem>
-                )
-              })}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {!isCustomer && (
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
+              <span className="relative">
+                <Bell className="size-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-white">
+                    {unreadCount}
+                  </span>
+                )}
+              </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                {recentNotifications.length === 0 && (
+                  <div className="px-2 py-4 text-center text-sm text-muted-foreground">No notifications yet.</div>
+                )}
+                {recentNotifications.map((n) => {
+                  const Icon = CHANNEL_ICON[n.channels[0]] ?? Bell
+                  return (
+                    <DropdownMenuItem key={n.id} className="flex items-start gap-2">
+                      <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm font-medium">{n.recipient}</span>
+                        <span className="line-clamp-2 text-xs text-muted-foreground">{n.message}</span>
+                      </div>
+                      <Badge
+                        variant="secondary"
+                        className="ml-auto shrink-0"
+                      >
+                        {n.status}
+                      </Badge>
+                    </DropdownMenuItem>
+                  )
+                })}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
@@ -191,7 +196,7 @@ export function AppTopbar() {
               <DropdownMenuLabel className="text-xs text-muted-foreground">Demo: switch role</DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuGroup>
-              {(["owner", "admin", "staff", "customer"] as Role[]).map((role) => (
+              {(["owner", "staff", "customer"] as Role[]).map((role) => (
                 <DropdownMenuItem
                   key={role}
                   onClick={() => handleRoleSwitch(role)}

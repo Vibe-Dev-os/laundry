@@ -66,11 +66,21 @@ function reducer(state: AppState, action: Action): AppState {
     case "HYDRATE":
       return { ...state, ...action.data, isHydrated: true }
     case "LOGIN":
-      return { ...state, currentUser: action.user, selectedBusinessUnitId: action.user.businessUnitId === "all" ? "all" : state.selectedBusinessUnitId }
+      return {
+        ...state,
+        currentUser: action.user,
+        selectedBusinessUnitId: action.user.role === "customer" ? action.user.businessUnitId : state.selectedBusinessUnitId,
+      }
     case "LOGOUT":
       return { ...state, currentUser: null }
     case "SET_ROLE":
-      return state.currentUser ? { ...state, currentUser: { ...state.currentUser, role: action.role } } : state
+      return state.currentUser
+        ? {
+            ...state,
+            currentUser: { ...state.currentUser, role: action.role },
+            selectedBusinessUnitId: action.role === "customer" ? state.currentUser.businessUnitId : state.selectedBusinessUnitId,
+          }
+        : state
     case "SET_BUSINESS_UNIT":
       return { ...state, selectedBusinessUnitId: action.id }
     case "ADD_RESERVATION":
@@ -143,11 +153,26 @@ function reducer(state: AppState, action: Action): AppState {
   }
 }
 
+const SESSION_STORAGE_KEY = "ladrops-session"
+
+function readStoredSession(): { currentUser: CurrentUser | null; selectedBusinessUnitId: string } {
+  if (typeof window === "undefined") return { currentUser: null, selectedBusinessUnitId: "all" }
+  try {
+    const raw = localStorage.getItem(SESSION_STORAGE_KEY)
+    if (!raw) return { currentUser: null, selectedBusinessUnitId: "all" }
+    const parsed = JSON.parse(raw)
+    return { currentUser: parsed.currentUser ?? null, selectedBusinessUnitId: parsed.selectedBusinessUnitId ?? "all" }
+  } catch {
+    return { currentUser: null, selectedBusinessUnitId: "all" }
+  }
+}
+
 function initState(): AppState {
+  const stored = readStoredSession()
   return {
-    currentUser: null,
+    currentUser: stored.currentUser,
     businessUnits: [],
-    selectedBusinessUnitId: "all",
+    selectedBusinessUnitId: stored.selectedBusinessUnitId,
     reservations: [],
     sales: [],
     notifications: [],
@@ -253,6 +278,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const stateRef = React.useRef(state)
   React.useEffect(() => { stateRef.current = state }, [state])
 
+  // Keep the session mirrored to localStorage so a page refresh doesn't log the user out
+  React.useEffect(() => {
+    if (typeof window === "undefined") return
+    if (state.currentUser) {
+      localStorage.setItem(
+        SESSION_STORAGE_KEY,
+        JSON.stringify({ currentUser: state.currentUser, selectedBusinessUnitId: state.selectedBusinessUnitId })
+      )
+    } else {
+      localStorage.removeItem(SESSION_STORAGE_KEY)
+    }
+  }, [state.currentUser, state.selectedBusinessUnitId])
+
   // Fetch all data from MongoDB on mount
   React.useEffect(() => {
     async function hydrate() {
@@ -296,7 +334,6 @@ export function useApp() {
 
 export const ROLE_LABELS: Record<Role, string> = {
   owner: "Owner",
-  admin: "Branch Admin",
   staff: "Staff",
   customer: "Customer",
 }

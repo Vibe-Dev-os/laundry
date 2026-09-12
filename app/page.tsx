@@ -23,7 +23,7 @@ export default function LoginPage() {
   const { dispatch } = useApp()
   const [quickRole, setQuickRole] = React.useState<"owner" | "staff" | "customer">("owner")
   const [email, setEmail] = React.useState(QUICK_LOGINS.owner.email)
-  const [password, setPassword] = React.useState("password123")
+  const [password, setPassword] = React.useState("pass123")
   const [errors, setErrors] = React.useState<{ email?: string; password?: string }>({})
   const [loading, setLoading] = React.useState(false)
 
@@ -32,7 +32,7 @@ export default function LoginPage() {
     if (!role) return
     setQuickRole(role)
     setEmail(QUICK_LOGINS[role].email)
-    setPassword("password123")
+    setPassword("pass123")
     setErrors({})
   }
 

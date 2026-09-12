@@ -38,10 +38,10 @@ export const SERVICES: ServicePricing[] = [
 
 export const STAFF: StaffMember[] = [
   { id: "staff-1", name: "Marisol Cruz", email: "marisol@ladrops.ph", role: "owner", businessUnitId: "bu-ladrops", active: true, transactionsHandled: 142, salesProcessed: 186400, voidedTransactions: 2, initials: "MC" },
-  { id: "staff-2", name: "Jerome Bautista", email: "jerome@ladrops.ph", role: "admin", businessUnitId: "bu-ladrops", active: true, transactionsHandled: 98, salesProcessed: 121300, voidedTransactions: 1, initials: "JB" },
+  { id: "staff-2", name: "Jerome Bautista", email: "jerome@ladrops.ph", role: "staff", businessUnitId: "bu-ladrops", active: true, transactionsHandled: 98, salesProcessed: 121300, voidedTransactions: 1, initials: "JB" },
   { id: "staff-3", name: "Angela Reyes", email: "angela@ladrops.ph", role: "staff", businessUnitId: "bu-ladrops", active: true, transactionsHandled: 210, salesProcessed: 156800, voidedTransactions: 4, initials: "AR" },
   { id: "staff-4", name: "Paolo Santos", email: "paolo@ladrops.ph", role: "staff", businessUnitId: "bu-ladrops", active: true, transactionsHandled: 175, salesProcessed: 132900, voidedTransactions: 0, initials: "PS" },
-  { id: "staff-5", name: "Kristine Villanueva", email: "kristine@sisterco.ph", role: "admin", businessUnitId: "bu-sister", active: true, transactionsHandled: 88, salesProcessed: 98500, voidedTransactions: 1, initials: "KV" },
+  { id: "staff-5", name: "Kristine Villanueva", email: "kristine@sisterco.ph", role: "staff", businessUnitId: "bu-sister", active: true, transactionsHandled: 88, salesProcessed: 98500, voidedTransactions: 1, initials: "KV" },
   { id: "staff-6", name: "Dennis Ramos", email: "dennis@sisterco.ph", role: "staff", businessUnitId: "bu-sister", active: false, transactionsHandled: 64, salesProcessed: 71200, voidedTransactions: 3, initials: "DR" },
 ]
 
