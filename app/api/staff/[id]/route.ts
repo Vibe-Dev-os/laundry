@@ -2,12 +2,17 @@ import { NextResponse } from "next/server"
 import { connectDB } from "@/lib/db"
 import { StaffModel } from "@/lib/models/staff"
 import { err, toClient } from "@/lib/api-utils"
+import { hashPassword } from "@/lib/auth"
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB()
     const { id } = await params
-    const patch = await req.json()
+    const { password, ...patch } = await req.json()
+    if (password) {
+      if (String(password).length < 6) return err("Password must be at least 6 characters.", 400)
+      ;(patch as Record<string, unknown>).passwordHash = await hashPassword(password)
+    }
     const doc = await StaffModel.findByIdAndUpdate(id, patch, { new: true, lean: true })
     if (!doc) return err("Not found", 404)
     return NextResponse.json(toClient(doc))

@@ -39,7 +39,6 @@ type Action =
   | { type: "HYDRATE"; data: Pick<AppState, "businessUnits" | "services" | "staff" | "reservations" | "sales" | "notifications" | "templates"> }
   | { type: "LOGIN"; user: CurrentUser }
   | { type: "LOGOUT" }
-  | { type: "SET_ROLE"; role: Role }
   | { type: "SET_BUSINESS_UNIT"; id: string }
   | { type: "ADD_RESERVATION"; reservation: Reservation }
   | { type: "UPDATE_RESERVATION"; id: string; patch: Partial<Reservation> }
@@ -54,8 +53,8 @@ type Action =
   | { type: "ADD_SERVICE"; service: ServicePricing }
   | { type: "UPDATE_SERVICE"; id: string; patch: Partial<ServicePricing> }
   | { type: "DELETE_SERVICE"; id: string }
-  | { type: "ADD_STAFF"; staff: StaffMember }
-  | { type: "UPDATE_STAFF"; id: string; patch: Partial<StaffMember> }
+  | { type: "ADD_STAFF"; staff: StaffMember; password: string }
+  | { type: "UPDATE_STAFF"; id: string; patch: Partial<StaffMember>; password?: string }
   | { type: "TOGGLE_STAFF_ACTIVE"; id: string }
   | { type: "TOGGLE_AUTOMATION"; key: keyof AutomationToggles }
   | { type: "TOGGLE_SHARE_DB"; id: string }
@@ -73,14 +72,6 @@ function reducer(state: AppState, action: Action): AppState {
       }
     case "LOGOUT":
       return { ...state, currentUser: null }
-    case "SET_ROLE":
-      return state.currentUser
-        ? {
-            ...state,
-            currentUser: { ...state.currentUser, role: action.role },
-            selectedBusinessUnitId: action.role === "customer" ? state.currentUser.businessUnitId : state.selectedBusinessUnitId,
-          }
-        : state
     case "SET_BUSINESS_UNIT":
       return { ...state, selectedBusinessUnitId: action.id }
     case "ADD_RESERVATION":
@@ -235,10 +226,18 @@ async function persistAction(action: Action, currentState: AppState): Promise<vo
       await fetch(`/api/services/${action.id}`, { method: "DELETE" })
       break
     case "ADD_STAFF":
-      await fetch("/api/staff", { method: "POST", headers: JSON_HEADERS, body: JSON.stringify(action.staff) })
+      await fetch("/api/staff", {
+        method: "POST",
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ ...action.staff, password: action.password }),
+      })
       break
     case "UPDATE_STAFF":
-      await fetch(`/api/staff/${action.id}`, { method: "PUT", headers: JSON_HEADERS, body: JSON.stringify(action.patch) })
+      await fetch(`/api/staff/${action.id}`, {
+        method: "PUT",
+        headers: JSON_HEADERS,
+        body: JSON.stringify(action.password ? { ...action.patch, password: action.password } : action.patch),
+      })
       break
     case "TOGGLE_STAFF_ACTIVE": {
       const member = currentState.staff.find((s) => s.id === action.id)

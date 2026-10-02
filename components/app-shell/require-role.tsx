@@ -25,7 +25,7 @@ export function RequireRole({ navKey, children }: { navKey: string; children: Re
           </EmptyMedia>
           <EmptyTitle>Restricted for your role</EmptyTitle>
           <EmptyDescription>
-            This section isn&apos;t available for the {role} role. Switch roles from the profile menu to preview it.
+            This section isn&apos;t available for the {role} role.
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>

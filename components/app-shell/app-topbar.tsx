@@ -13,7 +13,6 @@ import {
   Moon,
   Search,
   Sun,
-  UserCircle,
 } from "lucide-react"
 import { useTheme } from "next-themes"
 
@@ -32,8 +31,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { ROLE_LABELS, useApp } from "@/lib/store"
-import type { Role } from "@/lib/types"
+import { useApp } from "@/lib/store"
 
 const CHANNEL_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
   sms: MessageSquare,
@@ -52,16 +50,9 @@ export function AppTopbar() {
 
   function handleLogout() {
     dispatch({ type: "LOGOUT" })
+    fetch("/api/auth/logout", { method: "POST" }).catch(() => {})
     toast("Signed out", { description: "You have been logged out." })
     router.push("/")
-  }
-
-  function handleRoleSwitch(role: Role) {
-    dispatch({ type: "SET_ROLE", role })
-    toast(`Viewing as ${ROLE_LABELS[role]}`, {
-      description: "Navigation and actions updated for this role.",
-    })
-    router.push("/dashboard")
   }
 
   if (!state.currentUser) return null
@@ -190,25 +181,6 @@ export function AppTopbar() {
                 <span className="font-medium">{state.currentUser.name}</span>
                 <span className="text-xs font-normal text-muted-foreground">{state.currentUser.email}</span>
               </DropdownMenuLabel>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuLabel className="text-xs text-muted-foreground">Demo: switch role</DropdownMenuLabel>
-            </DropdownMenuGroup>
-            <DropdownMenuGroup>
-              {(["owner", "staff", "customer"] as Role[]).map((role) => (
-                <DropdownMenuItem
-                  key={role}
-                  onClick={() => handleRoleSwitch(role)}
-                  className="justify-between"
-                >
-                  <span className="flex items-center gap-2">
-                    <UserCircle className="size-4" />
-                    {ROLE_LABELS[role]}
-                  </span>
-                  {state.currentUser?.role === role && <Badge variant="secondary">Current</Badge>}
-                </DropdownMenuItem>
-              ))}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-destructive">

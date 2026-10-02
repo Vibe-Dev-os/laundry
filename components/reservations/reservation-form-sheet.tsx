@@ -6,19 +6,19 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import { useApp } from "@/lib/store"
 import { SERVICE_LABELS, type ServiceKey } from "@/lib/types"
@@ -32,16 +32,21 @@ const SERVICE_KEYS: ServiceKey[] = ["wash-fold", "wash-iron", "dry-clean", "comf
 
 export function ReservationFormSheet({ open, onOpenChange }: ReservationFormSheetProps) {
   const { state, dispatch } = useApp()
-  const [name, setName] = React.useState("")
+  const isCustomer = state.currentUser?.role === "customer"
+  const [name, setName] = React.useState(isCustomer ? state.currentUser?.name ?? "" : "")
   const [contact, setContact] = React.useState("")
-  const [email, setEmail] = React.useState("")
+  const [email, setEmail] = React.useState(isCustomer ? state.currentUser?.email ?? "" : "")
   const [serviceKey, setServiceKey] = React.useState<ServiceKey>("wash-fold")
   const [kilos, setKilos] = React.useState("5")
   const [date, setDate] = React.useState<Date | undefined>(undefined)
   const [time, setTime] = React.useState("09:00")
   const [notes, setNotes] = React.useState("")
   const [businessUnitId, setBusinessUnitId] = React.useState(
-    state.selectedBusinessUnitId !== "all" ? state.selectedBusinessUnitId : (state.businessUnits[0]?.id ?? "")
+    isCustomer
+      ? state.currentUser?.businessUnitId ?? ""
+      : state.selectedBusinessUnitId !== "all"
+        ? state.selectedBusinessUnitId
+        : (state.businessUnits[0]?.id ?? "")
   )
   const [errors, setErrors] = React.useState<Record<string, string>>({})
   const [submitting, setSubmitting] = React.useState(false)
@@ -50,10 +55,16 @@ export function ReservationFormSheet({ open, onOpenChange }: ReservationFormShee
   // and the selected filter or loaded business units can change after initial mount.
   React.useEffect(() => {
     if (!open) return
+    if (isCustomer) {
+      setName(state.currentUser?.name ?? "")
+      setEmail(state.currentUser?.email ?? "")
+      setBusinessUnitId(state.currentUser?.businessUnitId ?? "")
+      return
+    }
     setBusinessUnitId((current) =>
       current ? current : state.selectedBusinessUnitId !== "all" ? state.selectedBusinessUnitId : (state.businessUnits[0]?.id ?? "")
     )
-  }, [open, state.selectedBusinessUnitId, state.businessUnits])
+  }, [open, isCustomer, state.currentUser, state.selectedBusinessUnitId, state.businessUnits])
 
   function reset() {
     setName("")
@@ -109,19 +120,19 @@ export function ReservationFormSheet({ open, onOpenChange }: ReservationFormShee
   }
 
   return (
-    <Sheet
+    <Dialog
       open={open}
       onOpenChange={(v) => {
         onOpenChange(v)
         if (!v) reset()
       }}
     >
-      <SheetContent className="flex flex-col gap-0 sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>New Reservation</SheetTitle>
-          <SheetDescription>Schedule a new laundry pickup or drop-off for a customer.</SheetDescription>
-        </SheetHeader>
-        <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-y-auto px-4">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>New Reservation</DialogTitle>
+          <DialogDescription>Schedule a new laundry pickup or drop-off for a customer.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
           <FieldGroup>
             <Field data-invalid={!!errors.name || undefined}>
               <FieldLabel htmlFor="customer-name">Customer Name</FieldLabel>
@@ -131,6 +142,7 @@ export function ReservationFormSheet({ open, onOpenChange }: ReservationFormShee
                 onChange={(e) => setName(e.target.value)}
                 aria-invalid={!!errors.name}
                 placeholder="Juan Dela Cruz"
+                disabled={isCustomer}
               />
               {errors.name && <FieldError>{errors.name}</FieldError>}
             </Field>
@@ -154,12 +166,13 @@ export function ReservationFormSheet({ open, onOpenChange }: ReservationFormShee
                 onChange={(e) => setEmail(e.target.value)}
                 aria-invalid={!!errors.email}
                 placeholder="juan@email.com"
+                disabled={isCustomer}
               />
               {errors.email && <FieldError>{errors.email}</FieldError>}
             </Field>
             <Field data-invalid={!!errors.businessUnit || undefined}>
               <FieldLabel htmlFor="business-unit">Business Unit</FieldLabel>
-              <Select value={businessUnitId} onValueChange={setBusinessUnitId}>
+              <Select value={businessUnitId} onValueChange={setBusinessUnitId} disabled={isCustomer}>
                 <SelectTrigger id="business-unit" className="w-full">
                   <SelectValue>
                     {() => state.businessUnits.find((bu) => bu.id === businessUnitId)?.name}
@@ -240,13 +253,13 @@ export function ReservationFormSheet({ open, onOpenChange }: ReservationFormShee
             </Field>
           </FieldGroup>
         </form>
-        <SheetFooter className="flex-row justify-end gap-2 border-t pt-4">
-          <SheetClose render={<Button variant="outline" />}>Cancel</SheetClose>
+        <DialogFooter className="flex-row justify-end gap-2">
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
           <Button onClick={handleSubmit} disabled={submitting}>
             {submitting ? "Saving…" : "Create Reservation"}
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

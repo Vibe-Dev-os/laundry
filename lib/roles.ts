@@ -25,6 +25,11 @@ export function canCreate(role: Role) {
   return role === "owner" || role === "staff"
 }
 
+// Customers may book their own reservation, but may not update status or delete — that stays staff/owner-only via canCreate/canDelete.
+export function canBookReservation(role: Role) {
+  return role === "owner" || role === "staff" || role === "customer"
+}
+
 export function canManageSettings(role: Role) {
   return role === "owner"
 }

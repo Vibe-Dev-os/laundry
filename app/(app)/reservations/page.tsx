@@ -7,17 +7,20 @@ import { Button } from "@/components/ui/button"
 import { ReservationFormSheet } from "@/components/reservations/reservation-form-sheet"
 import { ReservationsTable } from "@/components/reservations/reservations-table"
 import { filterByBU } from "@/lib/derived"
-import { canCreate } from "@/lib/roles"
+import { canBookReservation } from "@/lib/roles"
 import { useApp } from "@/lib/store"
 
 export default function ReservationsPage() {
   const { state } = useApp()
   const [sheetOpen, setSheetOpen] = useState(false)
   const role = state.currentUser?.role ?? "customer"
-  const reservations = useMemo(
-    () => filterByBU(state.reservations, state.selectedBusinessUnitId),
-    [state.reservations, state.selectedBusinessUnitId]
-  )
+  const isCustomer = role === "customer"
+  const email = state.currentUser?.email.toLowerCase()
+  const reservations = useMemo(() => {
+    const buScoped = filterByBU(state.reservations, state.selectedBusinessUnitId)
+    // Customers must only ever see their own reservations, never other customers'.
+    return isCustomer ? buScoped.filter((r) => r.email.toLowerCase() === email) : buScoped
+  }, [state.reservations, state.selectedBusinessUnitId, isCustomer, email])
 
   return (
     <div className="flex flex-col gap-6">
@@ -26,7 +29,7 @@ export default function ReservationsPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Reservations</h1>
           <p className="text-sm text-muted-foreground">Manage pickups, drop-offs, and order status.</p>
         </div>
-        {canCreate(role) && (
+        {canBookReservation(role) && (
           <Button onClick={() => setSheetOpen(true)}>
             <CalendarPlus data-icon="inline-start" />
             New Reservation

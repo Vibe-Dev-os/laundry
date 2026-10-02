@@ -37,12 +37,14 @@ export function StaffPanel({ businessUnitId }: { businessUnitId: string }) {
   const [formOpen, setFormOpen] = React.useState(false)
   const [name, setName] = React.useState("")
   const [email, setEmail] = React.useState("")
+  const [password, setPassword] = React.useState("")
   const [staffRole, setStaffRole] = React.useState<Role>("staff")
   const [errors, setErrors] = React.useState<Record<string, string>>({})
 
   function openNew() {
     setName("")
     setEmail("")
+    setPassword("")
     setStaffRole("staff")
     setErrors({})
     setFormOpen(true)
@@ -52,10 +54,12 @@ export function StaffPanel({ businessUnitId }: { businessUnitId: string }) {
     const nextErrors: Record<string, string> = {}
     if (!name.trim()) nextErrors.name = "Name is required."
     if (!email.trim() || !email.includes("@")) nextErrors.email = "Enter a valid email address."
+    if (!password || password.length < 6) nextErrors.password = "Password must be at least 6 characters."
+    const targetBU = businessUnitId === "all" ? state.businessUnits[0]?.id : businessUnitId
+    if (!targetBU) nextErrors.businessUnit = "Set up a business unit first."
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
 
-    const targetBU = businessUnitId === "all" ? state.businessUnits[0]?.id ?? "bu-1" : businessUnitId
     const initials = name
       .trim()
       .split(/\s+/)
@@ -78,6 +82,7 @@ export function StaffPanel({ businessUnitId }: { businessUnitId: string }) {
         voidedTransactions: 0,
         initials,
       },
+      password,
     })
     toast.success("Staff member added", { description: `"${name.trim()}" was added to the team.` })
     setFormOpen(false)
@@ -181,6 +186,18 @@ export function StaffPanel({ businessUnitId }: { businessUnitId: string }) {
                 aria-invalid={!!errors.email}
               />
               {errors.email && <FieldError>{errors.email}</FieldError>}
+            </Field>
+            <Field data-invalid={!!errors.password || undefined}>
+              <FieldLabel htmlFor="staff-password">Temporary Password</FieldLabel>
+              <Input
+                id="staff-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                aria-invalid={!!errors.password}
+                placeholder="At least 6 characters"
+              />
+              {errors.password && <FieldError>{errors.password}</FieldError>}
             </Field>
             <Field>
               <FieldLabel>Role</FieldLabel>

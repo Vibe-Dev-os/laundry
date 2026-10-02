@@ -24,5 +24,10 @@ export async function connectDB() {
     cached.promise = mongoose.connect(MONGODB_URI as string, { bufferCommands: false })
   }
   cached.conn = await cached.promise
+
+  // Lazy import avoids a module cycle (models import nothing from db.ts).
+  const { ensureAdminSeeded } = await import("@/lib/seed-admin")
+  await ensureAdminSeeded()
+
   return cached.conn
 }

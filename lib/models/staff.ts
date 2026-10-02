@@ -4,7 +4,8 @@ const schema = new mongoose.Schema(
   {
     _id: { type: String, required: true },
     name: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: ["owner", "staff", "customer"], default: "staff" },
     businessUnitId: { type: String, required: true },
     active: { type: Boolean, default: true },
@@ -20,6 +21,7 @@ schema.set("toJSON", {
   transform: (_doc, ret) => {
     ret.id = ret._id
     delete ret._id
+    delete ret.passwordHash
     return ret
   },
 })
